@@ -14,7 +14,9 @@ const onCreateNode = ({ node, getNodesByType, actions }, pluginOptions) => {
     const { createNodeField } = actions;
     if ((node.fileAbsolutePath && node.internal.type === `MarkdownRemark`) ||
         node.internal.type === `Mdx`) {
-        const files = getNodesByType(`File`);
+        console.log('#### DEBUG ####');
+        console.log('Magic starts here for type: ', node.internal.type);
+        const files = getNodesByType(`File`).filter((file) => file.absolutePath);
         const directory = path_1.default.dirname(node.fileAbsolutePath);
         // Deeply iterate through frontmatter data for absolute paths
         (0, traverse_1.default)(node.frontmatter).forEach(function (value) {
@@ -26,6 +28,7 @@ const onCreateNode = ({ node, getNodesByType, actions }, pluginOptions) => {
                 acc.push(acc.length > 0 ? [acc, current].join('.') : current);
                 return acc;
             }, []);
+            console.log('Paths: ', paths);
             let shouldTransform = options.include.length < 1;
             if (options.include.some((a) => paths.includes(a))) {
                 shouldTransform = true;
@@ -35,9 +38,20 @@ const onCreateNode = ({ node, getNodesByType, actions }, pluginOptions) => {
             }
             if (!shouldTransform)
                 return;
+            console.log('Getting file for value: ', value);
             const file = (0, _1.findMatchingFile)(value, files, options);
+            console.log('File: ', file);
+            if (!file || typeof file.absolutePath !== 'string') {
+                console.error('Invalid file or file.absolutePath is not a string', file);
+                return; // Skip this iteration or handle this case as appropriate
+            }
             const newValue = (0, utils_1.slash)(path_1.default.relative(directory, file.absolutePath));
-            this.update(newValue);
+            console.log(newValue, 'New Value');
+            if (newValue) {
+                console.log('Call this update');
+                this.update(newValue);
+            }
+            console.log('Call createNodeField');
             createNodeField({
                 node,
                 name: `frontmatter`,

@@ -36,7 +36,8 @@ export const onCreateNode = (
     (node.fileAbsolutePath && node.internal.type === `MarkdownRemark`) ||
     node.internal.type === `Mdx`
   ) {
-    const files = getNodesByType(`File`);
+    // Filter out files that don't have an absolute path
+    const files = getNodesByType(`File`).filter((file) => file.absolutePath);
 
     const directory = path.dirname(node.fileAbsolutePath);
 
@@ -64,9 +65,16 @@ export const onCreateNode = (
 
       const file = findMatchingFile(value, files, options);
 
-      const newValue = slash(path.relative(directory, file.absolutePath));
+      if (!file || typeof file.absolutePath !== 'string') {
+        console.error(
+          'Invalid file or file.absolutePath is not a string',
+          file,
+        );
+        return; // Skip this iteration or handle this case as appropriate
+      }
 
-      this.update(newValue);
+      const newValue = slash(path.relative(directory, file.absolutePath));
+      if (newValue) this.update(newValue);
 
       createNodeField({
         node,
