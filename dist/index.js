@@ -24,12 +24,8 @@ exports.defaultPluginOptions = {
     exclude: [],
 };
 const findMatchingFile = (src, files, options) => {
-    // console.log('##### Files testing ##### \n', files);
-    console.log(options.staticFolderName, src);
     const result = (0, lodash_1.find)(files, (file) => {
-        // console.log('Checking file: ', file?.absolutePath);
         const staticPath = (0, utils_1.slash)(path_1.default.join(options.staticFolderName, src));
-        // console.log('Returning slash result');
         return (0, utils_1.slash)(path_1.default.normalize(file.absolutePath)).endsWith(staticPath);
     });
     if (!result) {
